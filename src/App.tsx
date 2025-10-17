@@ -3,6 +3,7 @@ import "./global.css"
 import { Route, Routes } from "react-router"
 
 const Login = lazy(() => import("./pages/Login"))
+const Header = lazy(() => import("./layout/Header"))
 function App() {
 
   const [loading, setLoading] = useState(true)
@@ -14,6 +15,7 @@ function App() {
 
   return (
     <>
+    <Header/>
       <Suspense fallback={<div>Loading...</div>}>
    
           <Routes>

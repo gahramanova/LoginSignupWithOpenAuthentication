@@ -10,7 +10,7 @@ export default function DynamicLayout({children}:Props) {
       <div className='w-full md:w-[75%] m-auto h-auto'>
         <div
           className={[
-            style["profile-dynamic"], "py-13 border border-gray-300 w-full py-2 rounded-lg hover:bg-gray-50 transition shadow-lg rounded-xl"
+            style["profile-dynamic"], "py-10 border border-gray-300 w-full py-2 rounded-lg hover:bg-gray-50 transition shadow-lg rounded-xl"
           ].join(" ")}
         >
           {children}
