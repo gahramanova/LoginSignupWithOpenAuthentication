@@ -1,37 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react'
+import DynamicLayout from '../layout/DynamicLayout'
+import { Link, useNavigate } from 'react-router'
 import loginAuth from "../../public/assets/img/loginAuth.png"
-import DynamicLayout from "../layout/DynamicLayout"
-import { FcGoogle } from "react-icons/fc";
-import { SiGithub } from "react-icons/si";
-import { useAuth } from "../context/authContext";
-import { doSignInWithEmailandPassword, doSignWithGoogle } from "../firebase/auth";
-import { Link, useNavigate } from "react-router";
+import { doCreateUserWithEmailandPassword } from '../firebase/auth'
+import { useAuth } from '../context/authContext'
 
-export default function Login() {
+export default function Register() {
 
     const { userLoggedIn } = useAuth()
 
     const [email, setEmail] = useState<any>(null)
     const [password, setPassword] = useState<any>(null)
-    const [isSigningIn, setIsSigningIn] = useState(false)
+    const [confirmPassword, setConfirmPassword] = useState<any>(null)
+    const [isRegistering, setIsRegistering] = useState(false)
     const [errorMessage, setErrorMessage] = useState("")
 
     const formSubmit = async (e: any) => {
-        e.preventDefault()
-
-        if (!isSigningIn) {
-            setIsSigningIn(true)
-            await doSignInWithEmailandPassword({ email, password })
-        }
-    }
-
-    const onGoogleSignIn = async (e: any) => {
         e.preventDefault();
-        if (!isSigningIn) {
-            setIsSigningIn(true)
-            doSignWithGoogle().catch(err => {
-                setIsSigningIn(false)
-            })
+        if (!isRegistering) {
+            setIsRegistering(true)
+            await doCreateUserWithEmailandPassword({ email, password })
+
         }
     }
 
@@ -42,8 +31,6 @@ export default function Login() {
             navigate("/"); // Home səhifəsinə yönləndir
         }
     }, [userLoggedIn, navigate]);
-
-
     return (
         <>
             <DynamicLayout>
@@ -56,18 +43,27 @@ export default function Login() {
                     <div className="w-1/2 flex items-center justify-center">
                         <form onSubmit={formSubmit}>
                             <div className="p-8 w-96 text-center">
-                                <h2 className="text-3xl text-[#407BFF] font-semibold mb-3">Log in to Deeply</h2>
+                                <h2 className="text-3xl text-[#407BFF] font-semibold mb-3">Register to Deeply</h2>
                                 <div className="w-full mb-5">
                                     <input
                                         type="text"
                                         placeholder="Enter your email address"
+                                        required
                                         value={email} onChange={(e) => setEmail(e.target.value)}
                                         className="w-full border text-left border-gray-300 rounded-md pl-10 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                     <input
                                         type="password"
+                                        required
                                         value={password} onChange={(e) => setPassword(e.target.value)}
                                         placeholder="Enter your email password"
+                                        className="w-full border text-left border-gray-300 rounded-md pl-10 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
+                                    />
+                                    <input
+                                        type="password"
+                                        required
+                                        value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                                        placeholder="Confirm your password"
                                         className="w-full border text-left border-gray-300 rounded-md pl-10 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
                                     />
 
@@ -75,23 +71,10 @@ export default function Login() {
                                         <span className="text-red-600 font-bold">{errorMessage}</span>
                                     )}
                                 </div>
-                                <button type="submit" className="w-full text-white border border-gray-300 rounded-md py-2 bg-[#7AA3FF]">{isSigningIn ? "Signing in" : "Continue with email"}</button>
+                                <button type="submit" className="w-full text-white border border-gray-300 rounded-md py-2 bg-[#7AA3FF]">{isRegistering ? "Registering" : "Register"}</button>
                                 <hr className="mt-3 border border-gray-300" />
 
-                                <button
-                                    className="w-full flex items-center justify-center text-white border border-gray-300 rounded-md py-2 bg-[#407BFF] mb-3 mt-5"
-                                    disabled={isSigningIn}
-                                    onClick={(e) => { onGoogleSignIn(e) }}
-                                >
-                                    <FcGoogle className="text-xl mx-1" />
-                                    {isSigningIn ? "Signing in" : "Continue with Google"}</button>
-
-
-                                <button className="w-full flex items-center justify-center text-white border border-gray-300 rounded-md py-2 bg-[#407BFF]">
-                                    <SiGithub className="text-xl mx-1" />
-                                    Continue with Github</button>
-
-                                <p className="text-sm text-gray-400 mt-4">Don’t have an account? <Link to={"/register"} className="text-blue-500">Sign up</Link></p>
+                                <p className="text-sm text-gray-400 mt-4">Already have an account? <Link to={"/login"} className="text-blue-500">Sign up</Link></p>
                                 <footer className="text-xs text-gray-400 mt-6">
                                     Secure OAuth 2.0 authentication powered by Firebase
                                 </footer>
@@ -100,6 +83,7 @@ export default function Login() {
                     </div>
                 </div>
             </DynamicLayout>
+
 
         </>
     )

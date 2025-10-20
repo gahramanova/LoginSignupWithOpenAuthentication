@@ -4,6 +4,8 @@ import { Route, Routes } from "react-router"
 
 const Login = lazy(() => import("./pages/Login"))
 const Header = lazy(() => import("./layout/Header"))
+const Home = lazy(() => import("./pages/Home"))
+const Register = lazy(() => import("./pages/Register"))
 function App() {
 
   const [loading, setLoading] = useState(true)
@@ -19,7 +21,9 @@ function App() {
       <Suspense fallback={<div>Loading...</div>}>
    
           <Routes>
-            <Route element={<Login />} path="/"></Route>
+            <Route element={<Home />} path="/"></Route>
+            <Route element={<Login />} path="/login"></Route>
+            <Route element={<Register />} path="/register"></Route>
           </Routes>
       
       </Suspense>
