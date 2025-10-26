@@ -15,18 +15,48 @@ export default function Login() {
     const [password, setPassword] = useState<any>(null)
     const [isSigningIn, setIsSigningIn] = useState(false)
     const [errorMessage, setErrorMessage] = useState("")
+    const [loading, setLoading] = useState({
+        email:false,
+        google:false,
+        github:false
+    })
 
     const formSubmit = async (e: any) => {
         e.preventDefault()
+        setLoading({ email: true, google: false, github: false });
+
+        if (!email || !password) {
+            setErrorMessage("Please fill in both email and password fields.");
+            return;
+        }
+
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            setErrorMessage("Please enter a valid email address.");
+            return;
+        }
 
         if (!isSigningIn) {
             setIsSigningIn(true)
-            await doSignInWithEmailandPassword({ email, password })
+            try {
+                await doSignInWithEmailandPassword({ email, password })
+            } catch (err: any) {
+                console.log(err.code)
+
+                switch (err.code) {
+                    case "auth/invalid-credential":
+                        setErrorMessage("User not found. Please try again.")
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 
     const onGoogleSignIn = async (e: any) => {
         e.preventDefault();
+                setLoading({ email: false, google: true, github: false });
+
         if (!isSigningIn) {
             setIsSigningIn(true)
             doSignWithGoogle().catch(err => {
@@ -62,20 +92,20 @@ export default function Login() {
                                         type="text"
                                         placeholder="Enter your email address"
                                         value={email} onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full border text-left border-gray-300 rounded-md pl-10 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full border text-left border-gray-300 rounded-md px-4 py-3 text-gray-700 focus:outline-none focus:ring-[#407BFF] focus:border-[#407BFF]"
                                     />
                                     <input
                                         type="password"
                                         value={password} onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Enter your email password"
-                                        className="w-full border text-left border-gray-300 rounded-md pl-10 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
+                                        placeholder="Enter your password"
+                                        className="w-full border text-left border-gray-300 rounded-md px-4 py-3 text-gray-700 focus:outline-none focus:ring-[#407BFF] focus:border-[#407BFF] mt-2"
                                     />
 
                                     {errorMessage && (
-                                        <span className="text-red-600 font-bold">{errorMessage}</span>
+                                        <span className="text-red-600 font-normal">{errorMessage}</span>
                                     )}
                                 </div>
-                                <button type="submit" className="w-full text-white border border-gray-300 rounded-md py-2 bg-[#7AA3FF]">{isSigningIn ? "Signing in" : "Continue with email"}</button>
+                                <button type="submit" className="w-full text-white border border-gray-300 rounded-md py-2 bg-[#7AA3FF]">{loading.email ? "Signing in" : "Continue with email"}</button>
                                 <hr className="mt-3 border border-gray-300" />
 
                                 <button
@@ -84,7 +114,7 @@ export default function Login() {
                                     onClick={(e) => { onGoogleSignIn(e) }}
                                 >
                                     <FcGoogle className="text-xl mx-1" />
-                                    {isSigningIn ? "Signing in" : "Continue with Google"}</button>
+                                    {loading.google ? "Signing in" : "Continue with Google"}</button>
 
 
                                 <button className="w-full flex items-center justify-center text-white border border-gray-300 rounded-md py-2 bg-[#407BFF]">
