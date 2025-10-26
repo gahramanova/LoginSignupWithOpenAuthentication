@@ -17,10 +17,50 @@ export default function Register() {
 
     const formSubmit = async (e: any) => {
         e.preventDefault();
+
+        if (!email || !password || !confirmPassword) {
+            setErrorMessage("Please fill in all fields.");
+            return;
+        }
+
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            setErrorMessage("Please enter a valid email address.");
+            return;
+        }
+
+        if (password.length < 6) {
+            setErrorMessage("Password must be at least 6 characters long.");
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setErrorMessage("Passwords do not match.");
+            return;
+        }
+
         if (!isRegistering) {
             setIsRegistering(true)
-            await doCreateUserWithEmailandPassword({ email, password })
 
+
+            try {
+                await doCreateUserWithEmailandPassword({ email, password })
+                navigate("/")
+            } catch (err: any) {
+                console.log(err.code)
+                switch (err.code) {
+                    case "auth/email-already-in-use":
+                        setErrorMessage("This email is already registered.");
+                        break;
+                    case "auth/invalid-email":
+                        setErrorMessage("Invalid email format.");
+                        break;
+                    case "auth/weak-password":
+                        setErrorMessage("Password is too weak.");
+                        break;
+                    default:
+                        setErrorMessage("Something went wrong. Please try again.");
+                }
+            }
         }
     }
 
@@ -50,25 +90,25 @@ export default function Register() {
                                         placeholder="Enter your email address"
                                         required
                                         value={email} onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full border text-left border-gray-300 rounded-md pl-10 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full border text-left border-gray-300 rounded-md px-4 py-3 text-gray-700 focus:outline-none focus:ring-[#407BFF] focus:border-[#407BFF]"
                                     />
                                     <input
                                         type="password"
                                         required
                                         value={password} onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Enter your email password"
-                                        className="w-full border text-left border-gray-300 rounded-md pl-10 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
+                                        placeholder="Enter your password"
+                                        className="w-full border text-left border-gray-300 rounded-md px-4 py-3 text-gray-700 focus:outline-none focus:ring-[#407BFF] focus:border-[#407BFF] mt-2"
                                     />
                                     <input
                                         type="password"
                                         required
                                         value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
                                         placeholder="Confirm your password"
-                                        className="w-full border text-left border-gray-300 rounded-md pl-10 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
+                                        className="w-full border text-left border-gray-300 rounded-md px-4 py-3 text-gray-700 focus:outline-none focus:ring-[#407BFF] focus:border-[#407BFF] mt-2"
                                     />
 
                                     {errorMessage && (
-                                        <span className="text-red-600 font-bold">{errorMessage}</span>
+                                        <span className="text-red-600 font-normal">{errorMessage}</span>
                                     )}
                                 </div>
                                 <button type="submit" className="w-full text-white border border-gray-300 rounded-md py-2 bg-[#7AA3FF]">{isRegistering ? "Registering" : "Register"}</button>
