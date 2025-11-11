@@ -1,16 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Message, 
-  Security, 
-  Group, 
+import {
+  Message,
+  Security,
+  Group,
   Speed,
-  Smartphone 
+  Smartphone
 } from '@mui/icons-material';
 import { Button, Container, Grid, Card, CardContent } from '@mui/material';
 import { COLORS } from '../constants/color';
+import { useAuth } from '../context/authContext';
 
 const HomePage: React.FC = () => {
+
+  const { userLoggedIn } = useAuth(); 
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Hero Section */}
@@ -24,10 +28,22 @@ const HomePage: React.FC = () => {
               <p className="text-xl text-gray-600 mb-8">
                 Stay connected with a fast, secure, and convenient chat app. Enjoy real-time messaging.
               </p>
-              <div className="flex gap-4">
+               {userLoggedIn? (
+                <div className="flex gap-4">
+                <Link to="/main-chat">
+                  <Button
+                    variant="contained"
+                    size="large"
+                    style={{ backgroundColor: COLORS.primary }}
+                  >
+                    Let's start!
+                  </Button>
+                </Link>
+              </div> 
+               ) :  ( <div className="flex gap-4">
                 <Link to="/register">
-                  <Button 
-                    variant="contained" 
+                  <Button
+                    variant="contained"
                     size="large"
                     style={{ backgroundColor: COLORS.primary }}
                   >
@@ -35,8 +51,28 @@ const HomePage: React.FC = () => {
                   </Button>
                 </Link>
                 <Link to="/login">
-                  <Button 
-                    variant="outlined" 
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    style={{ color: COLORS.primary, borderColor: COLORS.primary }}
+                  >
+                    Sign in
+                  </Button>
+                </Link>
+              </div>) }
+              <div className="flex gap-4">
+                <Link to="/register">
+                  <Button
+                    variant="contained"
+                    size="large"
+                    style={{ backgroundColor: COLORS.primary }}
+                  >
+                    Let's start!
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button
+                    variant="outlined"
                     size="large"
                     style={{ color: COLORS.primary, borderColor: COLORS.primary }}
                   >
@@ -77,75 +113,67 @@ const HomePage: React.FC = () => {
 
       {/* Features Section */}
       <section className="py-16 bg-white">
-        <Container maxWidth="lg">
+        <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
-            Why <span style={{ color: COLORS.primary }}>Deeply</span>?
+            Why <span className="text-[#407BFF]">Deeply</span>?
           </h2>
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={4}>
-              <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-                <CardContent>
-                  <Speed style={{ fontSize: 48, color: COLORS.primary }} className="mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">Fast</h3>
-                  <p className="text-gray-600">
-                    Communicate instantly with real-time messaging
-                  </p>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-                <CardContent>
-                  <Security style={{ fontSize: 48, color: COLORS.primary }} className="mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">Secure</h3>
-                  <p className="text-gray-600">
-                    Secure chat experience with end-to-end encryption
-                  </p>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-                <CardContent>
-                  <Smartphone style={{ fontSize: 48, color: COLORS.primary }} className="mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">Responsive</h3>
-                  <p className="text-gray-600">
-                    Responsive design that works perfectly on all devices
-                  </p>
-                </CardContent>
-              </Card>
-            </Grid>
-                <Grid item xs={12} md={4}>
-              <Card className="text-center p-6 hover:shadow-lg transition-shadow">
-                <CardContent>
-                  <Smartphone style={{ fontSize: 48, color: COLORS.primary }} className="mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">User-friendly</h3>
-                  <p className="text-gray-600">
-                    Responsive design that works perfectly on all devices
-                  </p>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Container>
+
+          <div className="flex flex-wrap justify-center gap-8">
+            {[
+              {
+                icon: <Speed style={{ fontSize: 48, color: "#407BFF" }} />,
+                title: "Fast",
+                text: "Communicate instantly with real-time messaging",
+              },
+              {
+                icon: <Security style={{ fontSize: 48, color: "#407BFF" }} />,
+                title: "Secure",
+                text: "Secure chat experience with end-to-end encryption",
+              },
+              {
+                icon: <Smartphone style={{ fontSize: 48, color: "#407BFF" }} />,
+                title: "Responsive",
+                text: "Responsive design that works perfectly on all devices",
+              },
+              {
+                icon: <Smartphone style={{ fontSize: 48, color: "#407BFF" }} />,
+                title: "User-friendly",
+                text: "Simple and intuitive interface for everyone",
+              },
+            ].map((feature, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center justify-center text-center bg-white rounded-xl shadow-md hover:shadow-lg transition-all w-[540px] h-[220px] p-6"
+              >
+                <div className="mb-3">{feature.icon}</div>
+                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                <p className="text-gray-600">{feature.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
+
+
+
+
 
       {/* CTA Section */}
       <section className="py-16" style={{ backgroundColor: COLORS.primary }}>
         <Container maxWidth="lg">
           <div className="text-center text-white">
             <h2 className="text-3xl font-bold mb-4">
-            Let's join now!
+              Let's join now!
             </h2>
             <p className="text-xl mb-8 opacity-90">
               Join thousands of users and discover the modern chat experience
             </p>
             <Link to="/register">
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 size="large"
-                style={{ 
-                  backgroundColor: 'white', 
+                style={{
+                  backgroundColor: 'white',
                   color: COLORS.primary,
                   fontWeight: 'bold'
                 }}

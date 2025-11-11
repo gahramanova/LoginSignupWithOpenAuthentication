@@ -7,13 +7,10 @@ interface MessageInputProps {
   newMessage: string;
   onMessageChange: (message: string) => void;
   onSendMessage: () => void;
+   onTyping?: () => void;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({
-  newMessage,
-  onMessageChange,
-  onSendMessage
-}) => {
+const MessageInput: React.FC<MessageInputProps> = ({ newMessage, onMessageChange, onSendMessage }) => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -24,10 +21,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
   return (
     <div className="p-4 border-t border-gray-200 bg-white">
       <div className="flex items-center">
-        <IconButton className="mr-2" style={{ color: COLORS.primary }}>
-          <AttachFile />
-        </IconButton>
-        
         <TextField
           fullWidth
           variant="outlined"
@@ -40,11 +33,6 @@ const MessageInput: React.FC<MessageInputProps> = ({
           onKeyPress={handleKeyPress}
           InputProps={{ style: { borderRadius: '24px' } }}
         />
-        
-        <IconButton className="ml-2" style={{ color: COLORS.primary }}>
-          <EmojiEmotions />
-        </IconButton>
-        
         <IconButton 
           className="ml-2" 
           style={{ backgroundColor: COLORS.primary, color: 'white' }}
