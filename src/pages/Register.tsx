@@ -64,13 +64,13 @@ export default function Register() {
         }
     }
 
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
-    useEffect(() => {
-        if (userLoggedIn) {
-            navigate("/"); // Home səhifəsinə yönləndir
-        }
-    }, [userLoggedIn, navigate]);
+    // useEffect(() => {
+    //     if (userLoggedIn) {
+    //         navigate("/"); // Home səhifəsinə yönləndir
+    //     }
+    // }, [userLoggedIn, navigate]);
     return (
         <>
             <DynamicLayout>

@@ -1,10 +1,13 @@
+// src/types/chart.ts
+
 export interface Message {
   id: string;
   text: string;
   sender: string;
-  timestamp: Date;
+  timestamp: Date;        // component state-də Date obyektidir
   isOwn: boolean;
-  status: 'sent' | 'delivered' | 'read';
+  status: 'sent' | 'delivered' | 'read' | 'error';
+  room?: string;          // mesajın aid olduğu chat/room id (optional)
 }
 
 export interface Chat {
@@ -12,7 +15,7 @@ export interface Chat {
   name: string;
   avatar: string;
   lastMessage: string;
-  timestamp: Date;
+  timestamp: Date;        // son mesajın zamanı
   unread: number;
   isOnline: boolean;
 }
@@ -20,6 +23,6 @@ export interface Chat {
 export interface User {
   id: string;
   name: string;
-  avatar: string;
+  avatar?: string;
   isOnline: boolean;
 }
