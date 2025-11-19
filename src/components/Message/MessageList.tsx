@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import type { Message } from '../../types/chart';
+import type { Message } from '../../types/chat';
 import MessageBubble from './MessageBubble';
 
 

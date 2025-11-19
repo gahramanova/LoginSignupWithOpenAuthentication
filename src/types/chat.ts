@@ -10,15 +10,15 @@ export interface Message {
   room?: string;          // mesajın aid olduğu chat/room id (optional)
 }
 
-export interface Chat {
+export type Chat = {
   id: string;
   name: string;
-  avatar: string;
+  avatar: string;     // <-- bu şərtdir
   lastMessage: string;
-  timestamp: Date;        // son mesajın zamanı
-  unread: number;
+  timestamp: Date;
   isOnline: boolean;
-}
+  unread: number;
+};
 
 export interface User {
   id: string;

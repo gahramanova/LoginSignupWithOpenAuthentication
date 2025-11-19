@@ -1,6 +1,6 @@
 // src/components/ChatList/ChatList.tsx
 import React from 'react';
-import type { Chat } from '../../types/chart';
+import type { Chat } from '../../types/chat';
 import ChatListItem from './ChatListItem';
 
 interface ChatListProps {
@@ -8,6 +8,8 @@ interface ChatListProps {
   activeChat: Chat | null;
   onChatSelect: (chat: Chat) => void;
 }
+
+
 
 const ChatList: React.FC<ChatListProps> = ({ chats, activeChat, onChatSelect }) => {
   return (

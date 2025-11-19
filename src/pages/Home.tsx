@@ -1,19 +1,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Message,
   Security,
-  Group,
   Speed,
   Smartphone
 } from '@mui/icons-material';
-import { Button, Container, Grid, Card, CardContent } from '@mui/material';
+import { Button, Container, Grid } from '@mui/material';
 import { COLORS } from '../constants/color';
 import { useAuth } from '../context/authContext';
 
+
 const HomePage: React.FC = () => {
 
-  const { userLoggedIn } = useAuth(); 
+  const { userLoggedIn, currentUser, loading } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -28,58 +27,40 @@ const HomePage: React.FC = () => {
               <p className="text-xl text-gray-600 mb-8">
                 Stay connected with a fast, secure, and convenient chat app. Enjoy real-time messaging.
               </p>
-               {userLoggedIn? (
+              {userLoggedIn ? (
                 <div className="flex gap-4">
-                <Link to="/main-chat">
-                  <Button
-                    variant="contained"
-                    size="large"
-                    style={{ backgroundColor: COLORS.primary }}
-                  >
-                    Let's start!
-                  </Button>
-                </Link>
-              </div> 
-               ) :  ( <div className="flex gap-4">
-                <Link to="/register">
-                  <Button
-                    variant="contained"
-                    size="large"
-                    style={{ backgroundColor: COLORS.primary }}
-                  >
-                    Let's start!
-                  </Button>
-                </Link>
-                <Link to="/login">
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    style={{ color: COLORS.primary, borderColor: COLORS.primary }}
-                  >
-                    Sign in
-                  </Button>
-                </Link>
-              </div>) }
-              <div className="flex gap-4">
-                <Link to="/register">
-                  <Button
-                    variant="contained"
-                    size="large"
-                    style={{ backgroundColor: COLORS.primary }}
-                  >
-                    Let's start!
-                  </Button>
-                </Link>
-                <Link to="/login">
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    style={{ color: COLORS.primary, borderColor: COLORS.primary }}
-                  >
-                    Sign in
-                  </Button>
-                </Link>
-              </div>
+                  <Link to="/main-chat">
+                    <Button
+                      variant="contained"
+                      size="large"
+                      style={{ backgroundColor: COLORS.primary }}
+                    >
+                      Let's start!
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex gap-4">
+                  <Link to="/register">
+                    <Button
+                      variant="contained"
+                      size="large"
+                      style={{ backgroundColor: COLORS.primary }}
+                    >
+                      Let's start!
+                    </Button>
+                  </Link>
+                  <Link to="/login">
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      style={{ color: COLORS.primary, borderColor: COLORS.primary }}
+                    >
+                      Sign in
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </Grid>
             <Grid item xs={12} md={6}>
               <div className="bg-white rounded-2xl shadow-xl p-6 border" style={{ borderColor: COLORS.secondary }}>

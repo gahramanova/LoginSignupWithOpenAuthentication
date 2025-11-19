@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar } from '@mui/material';
-import type { Chat } from '../../types/chart';
+import type { Chat } from '../../types/chat';
 
 const ChatHeader = ({ chat, onMenuOpen }: { chat: Chat | null, onMenuOpen: (event: React.MouseEvent<HTMLElement>) => void }) => {
   return (
