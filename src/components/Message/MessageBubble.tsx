@@ -2,7 +2,7 @@ import React from 'react';
 import { Avatar } from '@mui/material';
 import { COLORS } from '../../constants/color';
 import { formatTime } from '../../utils/utilsFunctions';
-import type { Message } from '../../types/chart';
+import type { Message } from '../../types/chat';
 
 
 interface MessageBubbleProps {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar, Badge } from '@mui/material';
-import type { Chat } from '../../types/chart';
+import type { Chat } from '../../types/chat';
 import { COLORS } from '../../constants/color';
 import { formatTime } from '../../utils/utilsFunctions';
 

@@ -1,5 +1,5 @@
-import { onAuthStateChanged} from "firebase/auth";
-import type {User} from "firebase/auth"
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import type { User } from "firebase/auth";
 import React, { useContext, useEffect, useState, createContext } from "react";
 import { auth } from "../../firebase/firebase";
 
@@ -11,6 +11,7 @@ interface AuthContextType {
   currentUser: User | null;
   userLoggedIn: boolean;
   loading: boolean;
+  logout: () => Promise<void>; // logout indi funksiya olacaq
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,10 +44,17 @@ export function AuthProvider({ children }: Props) {
     return () => unsubscribe();
   }, []);
 
+  const logout = async () => {
+    await signOut(auth);
+    setCurrentUser(null);
+    setUserLoggedIn(false);
+  };
+
   const value: AuthContextType = {
     currentUser,
     userLoggedIn,
     loading,
+    logout, // indi bu funksiya olacaq
   };
 
   return (

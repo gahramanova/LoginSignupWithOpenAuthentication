@@ -1,15 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import loginAuth from "../../public/assets/img/loginAuth.png"
 import DynamicLayout from "../layout/DynamicLayout"
 import { FcGoogle } from "react-icons/fc";
-import { SiGithub } from "react-icons/si";
 import { useAuth } from "../context/authContext";
 import { doSignInWithEmailandPassword, doSignWithGoogle } from "../firebase/auth";
 import { Link, useNavigate } from "react-router";
 
 export default function Login() {
 
-    const { userLoggedIn } = useAuth();
     const navigate = useNavigate();
 
     const [email, setEmail] = useState<any>(null);
@@ -43,7 +41,7 @@ export default function Login() {
             setIsSigningIn(true);
             try {
                 await doSignInWithEmailandPassword({ email, password });
-                navigate("/main-chat");
+                navigate("/");
             } catch (err: any) {
                 console.log(err.code);
                 switch (err.code) {
@@ -121,11 +119,6 @@ export default function Login() {
                             >
                                 <FcGoogle className="text-xl mx-1" />
                                 {loading.google ? "Signing in..." : "Continue with Google"}
-                            </button>
-
-                            <button className="w-full flex items-center justify-center text-white border border-gray-300 rounded-md py-2 bg-[#407BFF]">
-                                <SiGithub className="text-xl mx-1" />
-                                Continue with Github
                             </button>
 
                             <p className="text-sm text-gray-400 mt-4">

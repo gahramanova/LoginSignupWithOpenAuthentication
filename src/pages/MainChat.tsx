@@ -1,166 +1,208 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import ChatList from '../components/ChatList/ChatList';
-import ChatHeader from '../components/ChatHeader/ChatHeader';
-import MessageInput from '../components/Message/MessageInput';
-import MessageList from '../components/Message/MessageList';
-import { ListItemText, Menu, MenuItem } from '@mui/material';
-import useSocket from '../hooks/useSocket';
-import type { Chat, Message } from '../types/chart';
+import React, { useEffect, useState, useCallback } from "react";
+import ChatList from "../components/ChatList/ChatList";
+import ChatHeader from "../components/ChatHeader/ChatHeader";
+import MessageInput from "../components/Message/MessageInput";
+import MessageList from "../components/Message/MessageList";
+import { ListItemText, Menu, MenuItem } from "@mui/material";
+import { useSocketContext } from "../context/socketContext";
+import type { Chat, Message } from "../types/chat";
+import api from "../api";
 
 const MainChat = () => {
-  const [chats, setChats] = useState<Chat[]>([]); // Active chats
-  const [activeChat, setActiveChat] = useState<Chat | null>(null); // Active chat
-  const [messages, setMessages] = useState<Message[]>([]); // Messages of active chat
-  const [newMessage, setNewMessage] = useState(''); // New message input
-  const [typingUser, setTypingUser] = useState<string | null>(null); // Typing user
-  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null); // Menu anchor for settings
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [activeChat, setActiveChat] = useState<Chat | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [typingUser, setTypingUser] = useState<string | null>(null);
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
 
-  const { socket, sendMessage, onReceiveMessage, sendTyping, onUserTyping, joinRoom } = useSocket("http://localhost:3001");
+  const { sendMessage, onReceiveMessage, sendTyping, onUserTyping, joinRoom, socket } = useSocketContext();
 
-  // Fetch chat list when the component mounts
-    useEffect(() => {
-    // Fetch real chat list from backend here
-    // Example (replace this with actual API call):
-    const fetchedChats: Chat[] = [
-      { id: '1', name: 'Narmin Gahramanova', avatar: '', lastMessage: 'How are you?', timestamp: new Date(), unread: 2, isOnline: true },
-      { id: '2', name: 'Mika', avatar: '', lastMessage: 'Yes, I solved it', timestamp: new Date(), unread: 0, isOnline: false },
-      { id: '3', name: 'Maria Ochab', avatar: '', lastMessage: 'The meeting will be at 15:00 today?', timestamp: new Date(), unread: 1, isOnline: true }
-    ];
-    setChats(fetchedChats); // Update the chats list
+  // LOAD CHATS
+  useEffect(() => {
+    const loadChats = async () => {
+      try {
+        const res = await api.get("/api/messages"); // bütün mesajlar
+        const msgs = res.data;
+
+        // Chat-ları `room` üzrə qruplaşdır
+        const grouped: Record<string, Chat> = {};
+        msgs.forEach((m: any) => {
+          if (!grouped[m.room]) {
+            grouped[m.room] = {
+              id: m.room,
+              name: m.sender || "User " + m.room,
+              avatar: "", // default avatar
+              lastMessage: m.text,
+              timestamp: new Date(m.timestamp),
+              isOnline: false,
+              unread: 0
+            };
+          } else {
+            grouped[m.room].lastMessage = m.text;
+            grouped[m.room].timestamp = new Date(m.timestamp);
+          }
+        });
+
+        const chatArray = Object.values(grouped);
+        setChats(chatArray);
+
+        if (chatArray.length) {
+          setActiveChat(chatArray[0]); // ilk chat seçilir
+        }
+
+      } catch (e) {
+        console.error("CHAT LOAD ERROR:", e);
+      }
+    };
+
+    loadChats();
   }, []);
 
-  // When active chat changes, load messages for that chat
+  // JOIN ROOM & FETCH MESSAGES
   useEffect(() => {
-    if (activeChat && activeChat.id) {
-      setMessages([]); // Clear current messages when chat changes
-      joinRoom(activeChat.id); // Join the room of the active chat
-    }
-  }, [activeChat]);
+    if (!activeChat) return;
 
-  // Listen for incoming messages
-  // Subscribe to incoming messages from socket (replace existing useEffect)
-useEffect(() => {
-  if (!onReceiveMessage) return;
+    joinRoom(activeChat.id);
 
-  const unsub = onReceiveMessage((incoming: Message | Message[]) => {
-    // normalize to array
-    const incomingArr = Array.isArray(incoming) ? incoming : [incoming];
+    const fetchMessages = async () => {
+      try {
+        const res = await api.get(`/api/messages/${activeChat.id}`);
+        const data = res.data.map((m: any) => ({
+          ...m,
+          id: String(m.id),
+          timestamp: new Date(m.timestamp)
+        }));
+        setMessages(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
-    // normalize timestamps and ids
-    const normalized = incomingArr.map((m) => ({
-      ...m,
-      id: String(m.id),
-      timestamp: m.timestamp ? new Date(m.timestamp) : new Date(),
-    }));
+    fetchMessages();
+  }, [activeChat, joinRoom]);
 
-    setMessages(prev => {
-      // create a set of existing ids to avoid duplicates
-      const existingIds = new Set(prev.map(p => p.id));
-      const toAdd = normalized.filter(m => !existingIds.has(m.id));
-      if (toAdd.length === 0) return prev;
-      return [...prev, ...toAdd];
+  // LISTEN FOR INCOMING MESSAGES
+  useEffect(() => {
+    const unsubscribe = onReceiveMessage((incoming) => {
+      const arr = Array.isArray(incoming) ? incoming : [incoming];
+
+      const normalized = arr.map((m) => ({
+        ...m,
+        id: String(m.id),
+        timestamp: m.timestamp ? new Date(m.timestamp) : new Date()
+      }));
+
+      setMessages(prev => {
+        const existing = new Set(prev.map(m => m.id));
+        return [...prev, ...normalized.filter(m => !existing.has(m.id))];
+      });
+
+      setChats(prev => {
+        const last = normalized[normalized.length - 1];
+        if (!last.room) return prev;
+
+        const updatedChats = prev.map(c =>
+          c.id === last.room
+            ? {
+                ...c,
+                lastMessage: last.text,
+                timestamp: new Date(),
+                unread: activeChat?.id !== last.room ? (c.unread || 0) + 1 : 0
+              }
+            : c
+        );
+
+        const chatExists = updatedChats.some(c => c.id === last.room);
+        if (!chatExists) {
+          updatedChats.push({
+            id: last.room,
+            name: last.sender,
+            avatar: "",
+            lastMessage: last.text,
+            timestamp: new Date(),
+            isOnline: true,
+            unread: 1
+          });
+        }
+
+        return updatedChats.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      });
     });
 
-    // optional: update chats list lastMessage/timestamp
-    setChats(prev => {
-      // if incoming messages belong to some chat, find that chat and update
-      const last = normalized[normalized.length - 1];
-      if (!last?.room) return prev;
-      return prev.map(c => c.id === last.room ? { ...c, lastMessage: last.text, timestamp: new Date() } : c);
-    });
-  });
+    return () => unsubscribe?.();
+  }, [onReceiveMessage, activeChat]);
 
-  return () => unsub?.();
-}, [onReceiveMessage, setChats]);
-
-  // Handle typing indicator
+  // TYPING EVENTS
   useEffect(() => {
-    if (!onUserTyping) return;
-
-    const unsubTyping = onUserTyping(({ sender, room }) => {
+    const unsubscribe = onUserTyping(({ sender, room }) => {
       if (room === activeChat?.id && sender !== "You") {
-        setTypingUser(sender); // Show typing indicator
-        setTimeout(() => setTypingUser(null), 2000); // Hide typing after 2 seconds
+        setTypingUser(sender);
+        setTimeout(() => setTypingUser(null), 2000);
       }
     });
 
-    return () => unsubTyping?.(); // Clean up typing event listener
+    return () => unsubscribe?.();
   }, [onUserTyping, activeChat]);
 
+  // ONLINE STATUS
+  useEffect(() => {
+    if (!socket) return;
 
-  
+    socket.emit("user_online", "You");
 
-  // Send a message to backend
-const handleSendMessage = useCallback(() => {
-  if (newMessage.trim() === '' || !activeChat) return;
+    socket.on("update_users", (onlineUsers: Record<string, string>) => {
+      setChats(prev => prev.map(c => ({
+        ...c,
+        isOnline: Boolean(onlineUsers[c.id])
+      })));
+    });
 
-  const outgoing = {
-    id: Date.now().toString(),
-    text: newMessage,
-    sender: 'You',
-    timestamp: new Date().toISOString(), // send ISO string
-    room: activeChat.id,
-  };
+    return () => socket.off("update_users");
+  }, [socket]);
 
-  // send to server; server should broadcast back to room (including sender)
-  sendMessage(outgoing, (ack: any) => {
-    // optional ack handling: if server sends ack you can update status
-    if (ack?.status === 'ok') {
-      // nothing (server will emit receiveMessage which we handle)
-    } else {
-      console.error('Message not delivered', ack);
-    }
-  });
+  // SEND MESSAGE
+  const handleSendMessage = useCallback(() => {
+    if (!newMessage.trim() || !activeChat) return;
 
-  setNewMessage('');
-}, [newMessage, activeChat, sendMessage]);
+    const outgoing = {
+      id: Date.now().toString(),
+      text: newMessage,
+      sender: "You",
+      timestamp: new Date().toISOString(),
+      room: activeChat.id
+    };
 
+    sendMessage(outgoing);
+    setNewMessage("");
+  }, [newMessage, activeChat, sendMessage]);
 
-  // Handle menu open and close
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setMenuAnchor(event.currentTarget);
-  };
+  // AUTO SCROLL
+  useEffect(() => {
+    const container = document.getElementById("message-list");
+    if (container) container.scrollTop = container.scrollHeight;
+  }, [messages]);
 
-  const handleMenuClose = () => {
-    setMenuAnchor(null); // Close the menu
-  };
-
-  const handleClearChat = () => {
-    if (activeChat) {
-      setMessages([]); // Clear chat messages for active chat
-    }
-    handleMenuClose(); // Close the menu
-  };
-
-  const handleViewProfile = () => {
-    console.log('View profile for', activeChat?.name);
-    handleMenuClose(); // Close the menu
-  };
-
-  const handleToggleNotifications = () => {
-    console.log('Toggle notifications');
-    handleMenuClose(); // Close the menu
-  };
-
-  const handleLeaveChat = () => {
-    console.log('Leave chat');
-    setActiveChat(null); // Set active chat to null, effectively "leaving" it
-    handleMenuClose(); // Close the menu
-  };
-
-  const handleTyping = () => {
-    sendTyping("You", activeChat?.id);
-  };
+  // MENU HANDLERS
+  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => setMenuAnchor(e.currentTarget);
+  const handleMenuClose = () => setMenuAnchor(null);
+  const handleClearChat = () => { setMessages([]); handleMenuClose(); };
+  const handleViewProfile = () => { console.log("View profile", activeChat?.name); handleMenuClose(); };
+  const handleToggleNotifications = () => { console.log("Toggle notifications"); handleMenuClose(); };
+  const handleLeaveChat = () => { setActiveChat(null); handleMenuClose(); };
+  const handleTyping = () => { if (activeChat) sendTyping("You", activeChat.id); };
 
   return (
     <div className="flex h-screen bg-gray-100">
       <ChatList chats={chats} activeChat={activeChat} onChatSelect={setActiveChat} />
-      
+
       <div className="flex-1 flex flex-col">
         {activeChat ? (
           <>
             <ChatHeader chat={activeChat} onMenuOpen={handleMenuOpen} />
-            <MessageList messages={messages} />
+            <div id="message-list" className="flex-1 overflow-y-auto p-4">
+              <MessageList messages={messages} />
+            </div>
             {typingUser && <div>{typingUser} is typing...</div>}
             <MessageInput
               newMessage={newMessage}
@@ -171,39 +213,17 @@ const handleSendMessage = useCallback(() => {
           </>
         ) : (
           <div className="flex flex-col justify-center items-center gap-2 text-xl text-gray-600 mt-50">
-            <p className='font-medium text-3xl'>Deeply for the laptops</p>
-            <span className='text-sm'>Send and receive message without downloading any app.</span>
-            
+            <p className="font-medium text-3xl">Deeply for the laptops</p>
+            <span className="text-sm">Send and receive message without downloading any app.</span>
           </div>
         )}
       </div>
 
-      {/* MENU */}
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={handleMenuClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-      >
-        <MenuItem onClick={handleViewProfile}>
-          <ListItemText>View Profile</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={handleClearChat}>
-          <ListItemText>Clear Chat</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={handleToggleNotifications}>
-          <ListItemText>Toggle Notifications</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={handleLeaveChat}>
-          <ListItemText>Leave Chat</ListItemText>
-        </MenuItem>
+      <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
+        <MenuItem onClick={handleViewProfile}><ListItemText>View Profile</ListItemText></MenuItem>
+        <MenuItem onClick={handleClearChat}><ListItemText>Clear Chat</ListItemText></MenuItem>
+        <MenuItem onClick={handleToggleNotifications}><ListItemText>Toggle Notifications</ListItemText></MenuItem>
+        <MenuItem onClick={handleLeaveChat}><ListItemText>Leave Chat</ListItemText></MenuItem>
       </Menu>
     </div>
   );
