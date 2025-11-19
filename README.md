@@ -56,6 +56,7 @@ A full-stack **real-time chat application** designed to demonstrate modern web d
 
 ## Installation & Setup
 
+
 1. Clone the repository:
    ```bash
- (https://github.com/gahramanova/Deeply_Real_Chat_App)
+   git clone https://github.com/gahramanova/Deeply_Real_Chat_App
