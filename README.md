@@ -58,4 +58,4 @@ A full-stack **real-time chat application** designed to demonstrate modern web d
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/real-time-chat-app.git
+ (https://github.com/gahramanova/Deeply_Real_Chat_App)
